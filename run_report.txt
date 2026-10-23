@@ -83,4 +83,4 @@ LDO/DCDC 反馈分压网络 —— 输出电压漂移工具
     Vref温漂ppm      3.1%  #
   图已保存: feature_importance.png
 
-完成。图表与脚本在: D:\Desktop\mox\out
+完成。图表与脚本在: C:\Users\38101\.qoderworkcn\workspace\mvl2f28z2ijfjdm4\out

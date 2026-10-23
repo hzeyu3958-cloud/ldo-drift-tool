@@ -42,6 +42,26 @@
 
 > 免费档 2 核 / 4GB 内存完全够：蒙特卡洛默认 3 万样本、ML 默认 6000 样本，几秒钟跑完。想加大规模改 `monte_carlo(n=...)` / `build_ml_demo(n=...)` 即可。
 
+## Web 服务版（用于 HyperAI「部署」页）
+
+HyperAI 的**部署**页要求服务在容器内监听 `0.0.0.0:80`（不能绑 127.0.0.1/localhost），否则会被判定启动失败并回收。批处理脚本跑完就退出、不监听端口，直接部署会被回收。为此仓库附带 `app.py`——纯标准库 `http.server` 的 Web 版，把分析结果渲染成网页，并支持在页面上改参数实时重算。
+
+启动：
+```bash
+python app.py            # 默认监听 0.0.0.0:80
+PORT=8080 python app.py  # 本机测试换端口（Windows 上 80/8080 常需管理员或被占用）
+```
+
+在 HyperAI 部署页填「启动命令」时，推荐：
+```bash
+pip install -r requirements.txt && python app.py
+```
+- 首页 `/` 用当前参数跑一遍完整分析（报告 + 两张图内嵌网页）。
+- 页面顶部表单可改 Vref / Vout / 温度 / 容差 / TCR / Vref温漂 / 老化 / I_adj / 精度目标，点「重新计算」即时重算。
+- `/healthz` 返回 200，供平台探活。
+
+`app.py` 复用 `ldo_divider_drift.py` 里的全部物理模型与分析函数，两者逻辑一致。
+
 ## 改造成你自己的电路
 
 编辑脚本顶部 `make_default_cfg()` 里的参数就行：
@@ -70,6 +90,7 @@
 ## 文件
 
 - `ldo_divider_drift.py` — 主脚本（物理模型 + 三种分析 + 推荐 + sklearn）
+- `app.py` — Web 服务版（监听 0.0.0.0:80，用于 HyperAI 部署页）
 - `requirements.txt` — 依赖
 - `out/` — 运行后生成的图表（示例图已附）
 - `run_report.txt` — 一次完整运行的示例输出

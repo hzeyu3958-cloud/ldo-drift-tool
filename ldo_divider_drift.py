@@ -476,17 +476,21 @@ def plot_results(cfg):
 # ----------------------------------------------------------------------------
 # 主流程
 # ----------------------------------------------------------------------------
+def finalize_cfg(cfg):
+    """根据 Vout_target/Vref_nom/R2_nom 反算上电阻 R1(取 E96) 并算出设计标称 Vnom。
+    改完这几个参数后调用它，保证 R1_nom / Vnom 一致。"""
+    ratio = cfg["Vout_target"] / cfg["Vref_nom"] - 1.0
+    cfg["R1_nom"] = e96(ratio * cfg["R2_nom"])
+    cfg["Vnom"] = vout_model(25.0, 0, 0, 0, 0, 0, 0, 0,
+                             cfg["R1_nom"], cfg["R2_nom"], cfg["Vref_nom"])
+    return cfg
+
+
 def make_default_cfg():
     """一个典型 buck/LDO 可调输出例子：Vref=0.8V，目标 3.3V，工业温度 -40~125°C。"""
-    Vref_nom = 0.8
-    Vout_target = 3.3
-    R2_nom = 10e3
-    ratio = Vout_target / Vref_nom - 1.0        # = 3.125
-    R1_nom = e96(ratio * R2_nom)                 # 取到 E96
-    Vnom = vout_model(25.0, 0, 0, 0, 0, 0, 0, 0, R1_nom, R2_nom, Vref_nom)
     cfg = {
-        "Vref_nom": Vref_nom, "Vout_target": Vout_target,
-        "R1_nom": R1_nom, "R2_nom": R2_nom, "Vnom": Vnom,
+        "Vref_nom": 0.8, "Vout_target": 3.3,
+        "R2_nom": 10e3,
         "Tmin": -40.0, "Tmax": 125.0,
         # 默认用"便宜"的 1%/100ppm 电阻，方便看它为什么不达标
         "tol1": 0.01, "tol2": 0.01,
@@ -496,7 +500,7 @@ def make_default_cfg():
         "iadj_A": 100e-9,        # FB 偏置电流 100nA
         "spec_pct": 1.0,         # 全温区最坏情况精度目标 ±1%
     }
-    return cfg
+    return finalize_cfg(cfg)
 
 
 def report(cfg):
